@@ -5,11 +5,13 @@ import lombok.Setter;
 import org.springframework.stereotype.Repository;
 import prArrayList.exceptions.ErrOverflowException;
 
+import java.util.Random;
+
 @Repository
 public class StringList {
 
     @Getter
-    private String[] arrStringString;
+    private String[] arrString;
 
     @Getter
     @Setter
@@ -21,10 +23,12 @@ public class StringList {
     @Getter
     private int size = 0;
 
+    private record RecodMinValue(int index, String data){};
+
     private boolean usingFillFactor = false;
 
     public StringList() {
-        this.arrStringString = new String[this.capacity];
+        this.arrString = new String[this.capacity];
     }
 
     public StringList(int capacity) {
@@ -34,7 +38,8 @@ public class StringList {
 
         this.usingFillFactor = true;
 
-        this.arrStringString = new String[this.capacity];
+        this.arrString = new String[this.capacity];
+        loadingInitialData(0);
     }
 
     public StringList(int capacity, double fillFactor) {
@@ -47,7 +52,71 @@ public class StringList {
 
         this.usingFillFactor = true;
 
-        this.arrStringString = new String[this.capacity];
+        this.arrString = new String[this.capacity];
+        loadingInitialData(0);
+    }
+
+    private void loadingInitialData(int indexStart) {
+        for (int index = indexStart; index < capacity; index++) {
+            arrString[index] = "";
+            size++;
+        }
+    }
+
+    public void loadInitialRandomData(int endIndex) {
+        if (endIndex > capacity - 1) {
+            return;
+        }
+        int start = 1000;
+        int end = 10000;
+        var random = new Random();
+
+        for (int index = 0; index < endIndex; index++) {
+            int number = random.nextInt((end - start) + 1) + start;
+            arrString[index] = "string: " + number;
+        }
+    }
+
+    public RecodMinValue getMinData() {
+        int indexMin = -1;
+        String strMin = "";
+
+        for(int index = 0; index < size; index++){
+            if (strMin.isBlank()) {
+                strMin = arrString[index];
+                indexMin = index;
+            } else if (strMin.compareTo(arrString[index]) > 0) {
+                strMin = arrString[index];
+                indexMin = index;
+            }
+        }
+
+        return new RecodMinValue(indexMin, strMin);
+    }
+
+    public String[] sortString() {
+        int in, out;
+
+        String[] result = arrString;
+        /*var recordMinValueData = getMinData();
+
+        for (int index = recordMinValueData.index; index > 0; index--) {
+            result[index] = result[index - 1];
+        }
+        result[0] = recordMinValueData.data;*/
+
+        for(out = 1; out < size; out++) {
+            String temp = result[out];
+            in = out;
+            while(in > 0 && result[in-1].compareTo(temp) > 0 ) {
+                result[in] = result[in-1];
+                --in;
+            }
+
+            result[in] = temp;
+        }
+
+        return result;
     }
 
     private double expectedFillFactor(int numAdd) {
@@ -66,7 +135,7 @@ public class StringList {
             }
         }
 
-        arrStringString[size] = item;
+        arrString[size] = item;
         size += 1;
 
         return item;
@@ -91,7 +160,7 @@ public class StringList {
 
         int arrIndex = size;
         for (int index = 0; index < items.length; arrIndex++, index++) {
-            arrStringString[arrIndex] = items[index];
+            arrString[arrIndex] = items[index];
         }
 
         size = arrIndex + 1;
@@ -109,10 +178,11 @@ public class StringList {
 
         String[] newArrString = new String[capacity];
 
-        for (int index = 0; index < size; index++) {
-            newArrString[index] = arrStringString[index];
+        for (int index = 0; index < capacity; index++) {
+            var temp = index > (size -1) ? "" : arrString[index];
+            newArrString[index] = temp;
         }
 
-        arrStringString = newArrString;
+        arrString = newArrString;
     }
 }

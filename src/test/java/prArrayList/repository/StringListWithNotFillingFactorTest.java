@@ -53,4 +53,27 @@ public class StringListWithNotFillingFactorTest {
         assertEquals(capacity, stringList.getCapacity());
     }
 
+    @Test
+    public void loadInitialRandomData() {
+        var stringList = new StringList(10);
+        stringList.loadInitialRandomData(5);
+        for (var str : stringList.getArrString() ) {
+            System.out.println(str);
+        }
+    }
+
+    @Test
+    public void sortString() {
+        var tempList = new StringList(10);
+        tempList.loadInitialRandomData(7);
+
+        tempList.reconfigurationForNewCapacity(2);
+        System.out.println();
+        var result =  tempList.sortString(); // tempList.getArrString();
+        for (var str : result ) {
+            System.out.println(str.isBlank() ? "empty": str);
+        }
+
+    }
+
 }
