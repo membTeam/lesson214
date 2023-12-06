@@ -1,6 +1,6 @@
 package prArrayList.service;
 
-import prArrayList.models.StringList;
+import prArrayList.models.StringListTemp;
 
 public interface ArrayListControllerServ {
     String add(String item);
@@ -12,7 +12,7 @@ public interface ArrayListControllerServ {
     int indexOf(String item);
     int lastIndexOf(String item);
     String get(int index);
-    boolean equals(StringList otherList);
+    boolean equals(StringListTemp otherList);
     int size();
     boolean isEmpty();
     void clear();

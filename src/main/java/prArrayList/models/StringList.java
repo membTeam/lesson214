@@ -2,109 +2,168 @@ package prArrayList.models;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.stereotype.Repository;
-import prArrayList.exceptions.ErrOverflowException;
+import lombok.SneakyThrows;
+import prArrayList.exceptions.ErrStringListException;
 
-import java.util.Arrays;
-
-@Repository
-public class StringList {
-
+public class StringList implements StringListAPI {
     @Getter
     private String[] arrString;
-
-    @Getter
     @Setter
     private int capacity = 20;
-
     @Getter
-    private double fillFactor = 0.75;
+    private int size;
 
-    @Getter
-    private int size = 0;
+    // ------------------------------------------
 
-    @Getter
-    private boolean usingFillFactor = false;
-
+    @SneakyThrows(ErrStringListException.class)
     private void runException(String err) {
-        throw new ErrOverflowException(err);
+        throw new ErrStringListException(err);
     }
 
     private void initialDefault() {
         arrString = new String[capacity];
+        size = 0;
     }
 
-    // ------------------------------------
+    private void verifyData(String str, boolean withSize) {
+        if (str == null || str.isBlank()) {
+            runException("Нет данных для поиска");
+        }
+
+        if (withSize && size == capacity) {
+            runException("Переполнение списка");
+        }
+    }
+
+    private void verifyIndex(int index) {
+        if (index >= size || index < 0) {
+            runException("Интекс за пределом допустимого значения");
+        }
+    }
 
     public StringList() {
         initialDefault();
     }
 
     public StringList(int capacity) {
-        if (capacity > 0) {
-            this.capacity = capacity;
-        }
-
-        this.usingFillFactor = true;
-
-        this.arrString = new String[this.capacity];
-    }
-
-    public StringList(int capacity, double fillFactor) {
-        if (capacity > 0) {
-            this.capacity = capacity;
-        }
-        if (fillFactor > 0) {
-            this.fillFactor = fillFactor;
-        }
-
-        this.usingFillFactor = true;
-
-        this.arrString = new String[this.capacity];
-    }
-
-    public void loadInitialRandomData(int endIndex) {
-
-        if (!usingFillFactor && endIndex > (capacity - 1)) {
-            runException("Индекс за пределом допустимого значения");
-        }
-
+        this.capacity = capacity;
         initialDefault();
-
-        var number = 100;
-        for (int index = 0; index <= endIndex; index++) {
-            append("string: " + number++);
-        }
     }
 
+    // --------------------- start methods Override
 
-    /**
-     * Учитываются значения не равные null
-     * @param strList
-     * @return
-     */
-    public String[] getClone(String[] strList) {
+    @Override
+    public String add(String str) {
+        verifyData(str, true);
 
-        int capacityClone = 0;
-        for (var index = 0; index < strList.length; index++) {
-            if (strList[index] != null) {
-                capacityClone++;
+        return append(str);
+    }
+
+    @Override
+    public String add(int index, String str) {
+
+        verifyData(str, true);
+
+        offsetRight(index);
+        arrString[index] = str;
+
+        return arrString[index];
+    }
+
+    @Override
+    public String append(String str) {
+        verifyData(str, true);
+
+        arrString[size++] = str;
+
+        return str;
+    }
+
+    @Override
+    public String set(int index, String str) {
+        return null;
+    }
+
+    @Override
+    public String remove(String str) {
+        return null;
+    }
+
+    @Override
+    public String remove(int index) {
+        return null;
+    }
+
+    @Override
+    public boolean contains(String str) {
+        return indexOf(str) > -1;
+    }
+
+    @Override
+    public int indexOf(String str) {
+
+        verifyData(str, false);
+
+        int indexResult = -1;
+
+        for(var index = 0; index < size; index++)
+        {
+            if (arrString[index].equals(str)) {
+                indexResult = index;
+                break;
             }
         }
 
-        var resArrString = new String[capacityClone];
-
-        for (var index = 0; index < strList.length; index++) {
-            if (strList[index] == null) {
-                continue;
-            }
-
-            resArrString[index] = strList[index];
+        if (indexResult < 0) {
+            runException("Нет данных");
         }
 
-        return resArrString;
+        return indexResult;
     }
 
+    @Override
+    public int lastIndexOf(String str) {
+        verifyData(str, false);
+
+        var indexResult = -1;
+
+        for (var index = size - 1; index >= 0; index--) {
+            if (arrString[index].equals(str)) {
+                indexResult = index;
+                break;
+            }
+        }
+
+        if (indexResult < 0) {
+            runException("Нет данных");
+        }
+
+        return indexResult;
+    }
+
+    @Override
+    public String get(int index) {
+        verifyIndex(index);
+
+        return arrString[index];
+    }
+
+    @Override
+    public boolean equals(StringListTemp otherList) {
+        return false;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public void clear() {
+        initialDefault();
+    }
+
+    @Override
     public String[] toArray() {
         if (size == 0) {
             return null;
@@ -118,191 +177,6 @@ public class StringList {
         }
 
         return resArrString;
-    }
-
-    public String[] sortArrayString() {
-        return sortArrayString(arrString);
-    }
-
-    public String[] sortArrayString(String[] strList) {
-        int in, out;
-
-        String[] resultArrString = getClone(strList);
-        for(out = 1; out < size; out++) {
-            String temp = resultArrString[out];
-
-            if (temp == null) {
-                continue;
-            }
-
-            in = out;
-            while(in > 0 && resultArrString[in-1].compareTo(temp) > 0 ) {
-                resultArrString[in] = resultArrString[in-1];
-                --in;
-            }
-
-            if (in < out) {
-                resultArrString[in] = temp;
-            }
-        }
-
-        return resultArrString;
-    }
-
-    public boolean comparisonFillFactor() {
-        final int CURR_FILL_FACTOR = (int) ( ((double)size/capacity) * 100);
-        final int FILL_FACTOR_DEFAULT = (int) (fillFactor * 100);
-
-        return CURR_FILL_FACTOR - FILL_FACTOR_DEFAULT < 0 ? true : false;
-    }
-
-    public String add(String item) {
-        return append(item);
-    }
-
-    public String append(String item) {
-        if (item == null || item.isBlank()) {
-            runException("null значение");
-        }
-
-        if (!usingFillFactor && size == capacity) {
-            runException("Переполнение списка");
-        } else if (usingFillFactor && !comparisonFillFactor()) {
-            reconfigurationForNewCapacity();
-        }
-
-        arrString[size++] = item;
-
-        return item;
-    }
-
-    // TODO: реализовать append for string[]
-    /*public String[] append(String[] items) {
-
-        int newSize = size + items.length;
-
-        if (!usingFillFactor) {
-            if (newSize > capacity) {
-                reconfigurationForNewCapacity();
-            }
-        } else {
-            if (newSize > capacity) {
-                reconfigurationForNewCapacity();
-            } else if (expectedFillFactor(items.length) > fillFactor) {
-                //newSize = (int) (newSize * (1.0 + fillFactor));
-                reconfigurationForNewCapacity();
-            }
-        }
-
-        int arrIndex = size;
-        for (int index = 0; index < items.length; arrIndex++, index++) {
-            arrString[arrIndex] = items[index];
-        }
-
-        size = arrIndex + 1;
-
-        return items;
-    }*/
-
-    public void reconfigurationForNewCapacity() {
-
-        if (size == 0) {
-            return;
-        }
-
-        capacity = (int) (size * (1 + fillFactor));
-        String[] newArrString = new String[capacity];
-
-        int index = 0;
-        for(var item : arrString ){
-            newArrString[index++] = item;
-        }
-
-        arrString = newArrString;
-    }
-
-    public String get(int index) {
-        if (index > size) {
-            runException("Интекс за пределом допустимого значения");
-        }
-
-        return arrString[index];
-    }
-
-    public int indexOf(String str) {
-        int indexResult = -1;
-        for (var item : arrString) {
-            indexResult++;
-
-            if (item == null) {
-                continue;
-            } else if (item.equals(str)) {
-                break;
-            }
-        }
-
-        return indexResult;
-    }
-
-
-    public boolean equals(String[] otherList ) {
-        var strList = arrString.clone();
-
-        return equals(strList, otherList);
-    }
-
-    public boolean equals(String[] strList, String[] otherList ) {
-
-        var resultFalse = false;
-
-        strList = getClone(strList);
-        otherList = getClone(otherList);
-
-        if (strList.length != otherList.length) {
-            return resultFalse;
-        }
-
-        var strListSorted = sortArrayString(strList);
-        var otherListSorted = sortArrayString(otherList);
-
-        for (var index = 0; index < strListSorted.length; index++) {
-            if (!strListSorted[index].equals(otherListSorted[index])) {
-                return resultFalse;
-            }
-        }
-
-        return !resultFalse;
-    }
-
-    public void clear() {
-        initialDefault();
-    }
-
-    public boolean isEmpty() {
-        return size > 0;
-    }
-
-    public boolean contains(String str) {
-        return indexOf(str) > -1;
-    }
-
-    public String set(int index, String str) {
-        if (index > (size - 1)) {
-            runException("Индекс за пределами допустимого значения");
-        }
-
-        return (arrString[index] = str);
-    }
-
-    public int lastIndex(String str) {
-
-        for (var index = size - 1; index >= 0; index--) {
-            if (arrString[index].equals(str)) {
-                return index;
-            }
-        }
-
-        return -1;
     }
 
     public void offsetLeft(int indexOffSet) {
@@ -320,33 +194,14 @@ public class StringList {
     public void offsetRight(int indexOffSet) {
         if ( size == capacity || indexOffSet > size -1) {
             runException("переполнение массива");
-        } else if (indexOffSet > size -1) {
-            runException("Индекс за пределами допустимого значения");
         }
 
-        append("-");
+        append("empty");
         for (var index = size -1; index >= indexOffSet; index--) {
             arrString[index] = arrString[index - 1];
         }
 
         arrString[indexOffSet] = "empty";
-    }
-
-    public String remove(int indexRemove) {
-
-        var resultRemove = get(indexRemove);
-
-        offsetLeft(indexRemove);
-
-        return resultRemove;
-    }
-
-    public String add(int index, String str) {
-        offsetRight(index);
-
-        arrString[index] = str;
-
-        return arrString[index];
     }
 
 }

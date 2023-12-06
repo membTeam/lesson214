@@ -7,13 +7,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import prArrayList.exceptions.ErrOverflowException;
-import prArrayList.models.StringList;
+import prArrayList.models.StringListTemp;
 
 import java.util.Random;
 
 public class StringListWithNotFillingFactorTest {
 
-    private StringList stringList;
+    private StringListTemp stringList;
 
     private void initDefault() {
         stringList.append("100");
@@ -25,7 +25,7 @@ public class StringListWithNotFillingFactorTest {
 
     @BeforeEach
     private void setUp() {
-        stringList = new StringList();
+        stringList = new StringListTemp();
     }
 
     @Test
