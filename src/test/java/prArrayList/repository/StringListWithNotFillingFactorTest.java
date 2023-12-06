@@ -61,7 +61,6 @@ public class StringListWithNotFillingFactorTest {
         stringList.loadInitialRandomData(5);
 
         int size = stringList.getSize();
-        // TODO: нужен обработчик доступа по интексу
         assertEquals(null, stringList.get(size) );
 
         assertNotNull(stringList.get(size-1));
