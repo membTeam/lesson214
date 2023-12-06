@@ -5,13 +5,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import prArrayList.exceptions.ErrStringListException;
 import prArrayList.models.StringList;
 
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static org.junit.jupiter.api.Assertions.*;
+import static prArrayList.StringList.ParametrizedMethods.*;
 
 public class StringListTest {
 
@@ -20,7 +19,7 @@ public class StringListTest {
     private StringList stringList;
 
     private void initialDefault() {
-        for (var str : Stream.of("103", "102", "103", "100", "104", "105").collect(Collectors.toList())) {
+        for (var str : STRING_ARR_DEFAULT){
             stringList.add(str);
         }
     }
@@ -30,7 +29,139 @@ public class StringListTest {
         stringList = new StringList();
     }
 
-    // --------------------------- start test method
+    // --------------------------- start test methods
+
+    @Test
+    public void equalsArray() {
+        initialDefault();
+
+        assertTrue(stringList.equals(STRING_ARR_EQUALS));
+        assertFalse(stringList.equals(STRING_ARR_NOT_EQUALS));
+        assertFalse(stringList.equals(STRING_ARR_NOT_EQUALS2));
+    }
+
+    @Test
+    public void sortArrayString() {
+        initialDefault();
+        var res = stringList.sortArrayString(null);
+        assertEquals(stringList.getSize(), res.length);
+    }
+
+    @Test
+    public void getClone() {
+        initialDefault();
+
+        var resClone = stringList.getClone();
+
+        assertEquals(stringList.getSize(), resClone.length);
+    }
+
+    @ParameterizedTest
+    @MethodSource(PATH_PARAMETIZED_METHOD + "indexOf")
+    public void removeByString(String str) {
+        initialDefault();
+
+        if (str.isBlank() || str.equals("100000")) {
+            assertThrows(ErrStringListException.class, ()-> stringList.remove(str));
+        } else {
+            var sizeBeforRemove = stringList.getSize();
+            var resRemove = stringList.remove(str);
+
+            assertEquals(sizeBeforRemove - 1, stringList.getSize());
+            assertEquals(resRemove, str);
+            assertFalse(stringList.contains(str));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {5, 100000, -1, 0})
+    public void removeByIndex(int indexRemove) {
+        initialDefault();
+
+        if (indexRemove > stringList.getSize() || indexRemove < 0) {
+            assertThrows(ErrStringListException.class, () -> stringList.remove(indexRemove));
+        } else {
+            var strBeforRemove = stringList.get(indexRemove);
+            var sizeBeforRemove = stringList.getSize();
+
+            var resRemove = stringList.remove(indexRemove);
+
+            assertEquals(strBeforRemove, resRemove);
+            var exists = stringList.contains(strBeforRemove);
+            if (!exists) {
+                assertEquals(-1, stringList.indexOf(strBeforRemove));
+            }
+
+            assertEquals(sizeBeforRemove -1, stringList.getSize());
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 2, 100000, 0, 3, 5 })
+    public void addArrString(int indexAdd) {
+        initialDefault();
+        var lastIndex = stringList.getSize() - 1;
+
+        if (indexAdd > lastIndex) {
+            assertThrows(ErrStringListException.class, () -> stringList.add(indexAdd, STRING_ARR));
+        } else {
+            var strDataForIndexAdd = stringList.get(indexAdd);
+            var sizeBeforAdd = stringList.getSize();
+
+            var resAdd = stringList.add(indexAdd, STRING_ARR);
+            var newSize = stringList.getSize();
+
+            assertEquals(resAdd, newSize - sizeBeforAdd);
+
+            assertEquals(strDataForIndexAdd, stringList.get(indexAdd + STRING_ARR.length));
+            assertEquals(STRING_ARR[0], stringList.get(indexAdd));
+            assertEquals(STRING_ARR[1], stringList.get(indexAdd + 1));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = { 0, 2, 3, 5, 100000 })
+    public void offsetRight(int indexStart) {
+        initialDefault();
+        var startSize = stringList.getSize();
+
+        if (indexStart > startSize - 1) {
+            assertThrows(ErrStringListException.class, () -> stringList.offsetRight(2, indexStart));
+        } else {
+            stringList.offsetRight(2, startSize-1);
+        }
+    }
+
+    @Test
+    public void offsetRight() {
+        initialDefault();
+
+        var size = stringList.getSize();
+        stringList.offsetRight(3);
+
+        assertEquals(size+1, stringList.getSize());
+        assertEquals("empty", stringList.get(3));
+
+    }
+
+    @Test
+    public void offsetLeft() {
+        initialDefault();
+        var size = stringList.getSize();
+
+        stringList.offsetLeft(3);
+        assertEquals(size-1, stringList.getSize());
+    }
+
+    @Test
+    public void toArray() {
+        initialDefault();
+
+        var sizeStringList = stringList.getSize();
+        var listRes = stringList.toArray();
+
+        assertEquals(sizeStringList, listRes.length);
+    }
 
     @Test
     public void clear() {
@@ -82,8 +213,10 @@ public class StringListTest {
     public void contains(String str) {
         initialDefault();
 
-        if (str.equals("100000") || str.isBlank()) {
-            assertThrows(ErrStringListException.class, () -> stringList.indexOf(str));
+        if (str.equals("100000")) {
+            assertEquals(false, stringList.contains(str));
+        } else if (str.isBlank()) {
+            assertThrows(ErrStringListException.class, ()-> stringList.contains(str));
         } else {
             assertEquals(true, stringList.contains(str));
         }
@@ -107,7 +240,9 @@ public class StringListTest {
     public void indexOf(String str) {
         initialDefault();
 
-        if (str.equals("100000") || str.isBlank()) {
+        if (str.equals("100000")) {
+            assertEquals(-1, stringList.indexOf(str));
+        } else if (str.isBlank()) {
             assertThrows(ErrStringListException.class, () -> stringList.indexOf(str));
         } else {
             var index = stringList.indexOf(str);

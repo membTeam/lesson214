@@ -174,34 +174,6 @@ public class StringListTemp {
         return item;
     }
 
-    // TODO: реализовать append for string[]
-    /*public String[] append(String[] items) {
-
-        int newSize = size + items.length;
-
-        if (!usingFillFactor) {
-            if (newSize > capacity) {
-                reconfigurationForNewCapacity();
-            }
-        } else {
-            if (newSize > capacity) {
-                reconfigurationForNewCapacity();
-            } else if (expectedFillFactor(items.length) > fillFactor) {
-                //newSize = (int) (newSize * (1.0 + fillFactor));
-                reconfigurationForNewCapacity();
-            }
-        }
-
-        int arrIndex = size;
-        for (int index = 0; index < items.length; arrIndex++, index++) {
-            arrString[arrIndex] = items[index];
-        }
-
-        size = arrIndex + 1;
-
-        return items;
-    }*/
-
     public void reconfigurationForNewCapacity() {
 
         if (size == 0) {

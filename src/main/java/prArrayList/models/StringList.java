@@ -36,8 +36,17 @@ public class StringList implements StringListAPI {
     }
 
     private void verifyIndex(int index) {
-        if (index >= size || index < 0) {
+        if (index > size - 1 || index < 0) {
             runException("Интекс за пределом допустимого значения");
+        }
+    }
+
+    private void verifyIndexGrup(int sizeAdd, int startIndex) {
+        if ( size == capacity
+                || (size + sizeAdd) > capacity - 1
+                || startIndex > size -1
+                || startIndex < 0 ) {
+            runException("Переполнение списка");
         }
     }
 
@@ -61,13 +70,63 @@ public class StringList implements StringListAPI {
 
     @Override
     public String add(int index, String str) {
-
         verifyData(str, true);
 
         offsetRight(index);
         arrString[index] = str;
 
         return arrString[index];
+    }
+
+    @Override
+    public void offsetRight(int numOffSetRight, int indexStart) {
+        verifyIndexGrup(numOffSetRight, indexStart);
+
+        var baseIndex = size -1;
+        for (var numberAdd = 0; numberAdd < numOffSetRight; numberAdd++) {
+            append("empty");
+        }
+
+        var lastIndexSet = size-1;
+        var indexEnd = lastIndexSet + numOffSetRight;
+
+        for (; baseIndex >= indexStart; baseIndex--, lastIndexSet-- ) {
+            arrString[lastIndexSet] = arrString[baseIndex];
+        }
+    }
+
+    public int add(int index, String[] arrAdd) {
+        verifyIndexGrup(arrAdd.length, index);
+
+        var startIndex = index;
+        var numOffSetRight = arrAdd.length;
+        var endIndex = startIndex + numOffSetRight;
+
+        offsetRight(numOffSetRight, startIndex);
+
+        for (var indexArr = 0; startIndex < endIndex; startIndex++, indexArr++) {
+            arrString[startIndex] = arrAdd[indexArr];
+        }
+
+        return numOffSetRight;
+    }
+
+    public int add(String[] arrAdd) {
+        verifyIndexGrup(arrAdd.length, 0);
+
+        for (var index = 0; index < arrAdd.length; index++) {
+            var strAdd = arrAdd[index];
+            verifyData(strAdd, false);
+        }
+
+        var resultAdd = 0;
+        for (var index = 0; index < arrAdd.length; index++) {
+            var strAdd = arrAdd[index];
+            arrString[size++] = strAdd;
+            resultAdd++;
+        }
+
+        return resultAdd;
     }
 
     @Override
@@ -86,17 +145,29 @@ public class StringList implements StringListAPI {
 
     @Override
     public String remove(String str) {
-        return null;
+        verifyData(str,false);
+
+        var index = indexOf(str);
+        if (index < 0) {
+            runException("Нет данных");
+        }
+
+        return remove(index);
     }
 
     @Override
     public String remove(int index) {
-        return null;
+        verifyIndex(index);
+
+        var resultRemove = get(index);
+
+        offsetLeft(index);
+        return resultRemove;
     }
 
     @Override
     public boolean contains(String str) {
-        return indexOf(str) > -1;
+        return  indexOf(str) > -1;
     }
 
     @Override
@@ -112,10 +183,6 @@ public class StringList implements StringListAPI {
                 indexResult = index;
                 break;
             }
-        }
-
-        if (indexResult < 0) {
-            runException("Нет данных");
         }
 
         return indexResult;
@@ -149,8 +216,81 @@ public class StringList implements StringListAPI {
     }
 
     @Override
-    public boolean equals(StringListTemp otherList) {
-        return false;
+    public String[] getClone() {
+        return getClone(arrString);
+    }
+
+    @Override
+    public String[] getClone(String[] strList) {
+
+        int capacityClone = 0;
+        for (var index = 0; index < strList.length; index++) {
+            if (strList[index] != null) {
+                capacityClone++;
+            }
+        }
+
+        var resArrString = new String[capacityClone];
+
+        for (var index = 0; index < strList.length; index++) {
+            if (strList[index] == null) {
+                continue;
+            }
+
+            resArrString[index] = strList[index];
+        }
+
+        return resArrString;
+    }
+
+    @Override
+    public String[] sortArrayString(String[] strList) {
+        int in, out;
+
+        String[] resultArrString = strList == null ? getClone(arrString) : strList;
+
+        for(out = 1; out < size; out++) {
+            String temp = resultArrString[out];
+
+            if (temp == null) {
+                continue;
+            }
+
+            in = out;
+            while(in > 0 && resultArrString[in-1].compareTo(temp) >= 0 ) {
+                resultArrString[in] = resultArrString[in-1];
+                --in;
+            }
+
+            if (in < out) {
+                resultArrString[in] = temp;
+            }
+        }
+
+        return resultArrString;
+    }
+
+    @Override
+    public boolean equals(String[] otherStringArr) {
+        var resultFalse = false;
+
+        var arrStringClone = getClone(arrString);
+        var otherStringArrClone = getClone(otherStringArr);
+
+        if (arrStringClone.length != otherStringArrClone.length) {
+            return resultFalse;
+        }
+
+        var strListCloneSorted = sortArrayString(arrStringClone);
+        var otherListArrSorted = sortArrayString(otherStringArrClone);
+
+        for (var index = 0; index < strListCloneSorted.length; index++) {
+            if (!strListCloneSorted[index].equals(otherListArrSorted[index])) {
+                return resultFalse;
+            }
+        }
+
+        return !resultFalse;
     }
 
     @Override
@@ -179,10 +319,9 @@ public class StringList implements StringListAPI {
         return resArrString;
     }
 
+    @Override
     public void offsetLeft(int indexOffSet) {
-        if ( indexOffSet < 0 || indexOffSet > size - 2) {
-            runException("Индекс за пределами допустимого значения");
-        }
+        verifyIndex(indexOffSet);
 
         for (var index = indexOffSet; index < size - 1; index++) {
             arrString[index] = arrString[index + 1];
@@ -191,6 +330,7 @@ public class StringList implements StringListAPI {
         size--;
     }
 
+    @Override
     public void offsetRight(int indexOffSet) {
         if ( size == capacity || indexOffSet > size -1) {
             runException("переполнение массива");
