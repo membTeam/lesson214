@@ -5,20 +5,18 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import prArrayList.exceptions.ErrStringListException;
 
+import static prArrayList.models.StringListService.*;
+
 public class StringList implements StringListAPI {
-    @Getter
     private String[] arrString;
-    @Setter
     private int capacity = 20;
+
     @Getter
     private int size;
 
-    // ------------------------------------------
+    private StringListService service = new StringListService();
 
-    @SneakyThrows(ErrStringListException.class)
-    private void runException(String err) {
-        throw new ErrStringListException(err);
-    }
+    // ------------------------------------------
 
     private void initialDefault() {
         arrString = new String[capacity];
@@ -35,13 +33,13 @@ public class StringList implements StringListAPI {
         }
     }
 
-    private void verifyIndex(int index) {
+    public void verifyIndex(int index) {
         if (index > size - 1 || index < 0) {
             runException("Интекс за пределом допустимого значения");
         }
     }
 
-    private void verifyIndexGrup(int sizeAdd, int startIndex) {
+    public void verifyIndexGrup(int sizeAdd, int startIndex) {
         if ( size == capacity
                 || (size + sizeAdd) > capacity - 1
                 || startIndex > size -1
@@ -78,22 +76,7 @@ public class StringList implements StringListAPI {
         return arrString[index];
     }
 
-    @Override
-    public void offsetRight(int numOffSetRight, int indexStart) {
-        verifyIndexGrup(numOffSetRight, indexStart);
 
-        var baseIndex = size -1;
-        for (var numberAdd = 0; numberAdd < numOffSetRight; numberAdd++) {
-            append("empty");
-        }
-
-        var lastIndexSet = size-1;
-        var indexEnd = lastIndexSet + numOffSetRight;
-
-        for (; baseIndex >= indexStart; baseIndex--, lastIndexSet-- ) {
-            arrString[lastIndexSet] = arrString[baseIndex];
-        }
-    }
 
     public int add(int index, String[] arrAdd) {
         verifyIndexGrup(arrAdd.length, index);
@@ -140,7 +123,9 @@ public class StringList implements StringListAPI {
 
     @Override
     public String set(int index, String str) {
-        return null;
+        verifyIndex(index);
+
+        return (arrString[index] = str);
     }
 
     @Override
@@ -328,6 +313,23 @@ public class StringList implements StringListAPI {
         }
 
         size--;
+    }
+
+    @Override
+    public void offsetRight(int numOffSetRight, int indexStart) {
+        verifyIndexGrup(numOffSetRight, indexStart);
+
+        var baseIndex = size -1;
+        for (var numberAdd = 0; numberAdd < numOffSetRight; numberAdd++) {
+            append("empty");
+        }
+
+        var lastIndexSet = size-1;
+        var indexEnd = lastIndexSet + numOffSetRight;
+
+        for (; baseIndex >= indexStart; baseIndex--, lastIndexSet-- ) {
+            arrString[lastIndexSet] = arrString[baseIndex];
+        }
     }
 
     @Override

@@ -1,4 +1,4 @@
-package prArrayList.StringList;
+package prArrayList.stringList;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,13 +8,11 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import prArrayList.exceptions.ErrStringListException;
 import prArrayList.models.StringList;
-
 import static org.junit.jupiter.api.Assertions.*;
-import static prArrayList.StringList.ParametrizedMethods.*;
+
+import static prArrayList.stringList.ParametrizedMethods.*;
 
 public class StringListTest {
-
-    private final String PATH_PARAMETIZED_METHOD = "prArrayList.StringList.ParametrizedMethods#";
 
     private StringList stringList;
 
@@ -31,14 +29,28 @@ public class StringListTest {
 
     // --------------------------- start test methods
 
-    @Test
-    public void equalsArray() {
+    @ParameterizedTest
+    @MethodSource(PATH_PARAMETIZED_METHOD + "parametersMethodSet")
+    public void updateByMethodSet(ParamsForMethodSet param) {
         initialDefault();
 
-        assertTrue(stringList.equals(STRING_ARR_EQUALS));
-        assertFalse(stringList.equals(STRING_ARR_NOT_EQUALS));
-        assertFalse(stringList.equals(STRING_ARR_NOT_EQUALS2));
+        if (param.index() > stringList.getSize() || param.index() < 0) {
+            assertThrows(ErrStringListException.class, () -> stringList.set(param.index(), param.str()));
+        } else {
+            var resSet = stringList.set(param.index(), param.str());
+
+            assertEquals(param.str(), resSet);
+        }
     }
+
+    @ParameterizedTest
+    @MethodSource(PATH_PARAMETIZED_METHOD + "errayForEqualsArray")
+    public void verifyEqualsArray(ParamsForArray param) {
+        initialDefault();
+
+        assertEquals(param.isEqual(), stringList.equals(param.arrParams()));
+    }
+
 
     @Test
     public void sortArrayString() {
@@ -97,35 +109,36 @@ public class StringListTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = { 2, 100000, 0, 3, 5 })
+    @ValueSource(ints = { 2, 100000, 0, 3, 5, -1 })
     public void addArrString(int indexAdd) {
         initialDefault();
+
         var lastIndex = stringList.getSize() - 1;
 
-        if (indexAdd > lastIndex) {
-            assertThrows(ErrStringListException.class, () -> stringList.add(indexAdd, STRING_ARR));
+        if (indexAdd > lastIndex || indexAdd < 0) {
+            assertThrows(ErrStringListException.class, () -> stringList.add(indexAdd, STRING_ARR_ADD));
         } else {
             var strDataForIndexAdd = stringList.get(indexAdd);
             var sizeBeforAdd = stringList.getSize();
 
-            var resAdd = stringList.add(indexAdd, STRING_ARR);
+            var resAdd = stringList.add(indexAdd, STRING_ARR_ADD);
             var newSize = stringList.getSize();
 
             assertEquals(resAdd, newSize - sizeBeforAdd);
 
-            assertEquals(strDataForIndexAdd, stringList.get(indexAdd + STRING_ARR.length));
-            assertEquals(STRING_ARR[0], stringList.get(indexAdd));
-            assertEquals(STRING_ARR[1], stringList.get(indexAdd + 1));
+            assertEquals(strDataForIndexAdd, stringList.get(indexAdd + STRING_ARR_ADD.length));
+            assertEquals(STRING_ARR_ADD[0], stringList.get(indexAdd));
+            assertEquals(STRING_ARR_ADD[1], stringList.get(indexAdd + 1));
         }
     }
 
     @ParameterizedTest
-    @ValueSource(ints = { 0, 2, 3, 5, 100000 })
+    @ValueSource(ints = { 0, -10, 2, 3, 5, 100000 })
     public void offsetRight(int indexStart) {
         initialDefault();
-        var startSize = stringList.getSize();
+        var startSize = stringList.getSize() - 1;
 
-        if (indexStart > startSize - 1) {
+        if (indexStart > startSize) {
             assertThrows(ErrStringListException.class, () -> stringList.offsetRight(2, indexStart));
         } else {
             stringList.offsetRight(2, startSize-1);
