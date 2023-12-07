@@ -9,6 +9,7 @@ public class StringListService {
     public static final String DATA_OVERFLOW = "Переполнение списка";
     public static final String NO_DATA_TO_PROCESS = "Нет данных для обработки";
     public static final String DATA_IS_BLANK = "В строке нет данных";
+    public static final String ACCESS_IS_CLOSED = "Доступ закрыт";
 
 
     public static void verifyIndex(int index) {

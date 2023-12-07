@@ -7,14 +7,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import prArrayList.exceptions.ErrStringListException;
-import prArrayList.models.StringList;
+import prArrayList.models.StringListImpl;
 import static org.junit.jupiter.api.Assertions.*;
 
 import static prArrayList.stringList.ParametrizedMethods.*;
 
 public class StringListTest {
 
-    private StringList stringList;
+    private StringListImpl stringList;
 
     private void initialDefault() {
         for (var str : STRING_ARR_DEFAULT){
@@ -24,7 +24,7 @@ public class StringListTest {
 
     @BeforeEach
     private void setUp() {
-        stringList = new StringList();
+        stringList = new StringListImpl();
     }
 
     // --------------------------- start test methods
