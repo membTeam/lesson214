@@ -1,7 +1,5 @@
 package prArrayList.service;
 
-import prArrayList.models.StringList;
-
 public interface ArrayListControllerServ {
     String add(String item);
     String add(int index, String item);
@@ -12,7 +10,6 @@ public interface ArrayListControllerServ {
     int indexOf(String item);
     int lastIndexOf(String item);
     String get(int index);
-    boolean equals(StringList otherList);
     int size();
     boolean isEmpty();
     void clear();
