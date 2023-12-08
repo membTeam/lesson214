@@ -2,14 +2,48 @@ package prArrayList.models;
 
 import lombok.Getter;
 
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import static prArrayList.models.StringListService.*;
 
 public class StringListImpl implements StringListAPI {
+
+    private final double FILLFACTOR_DEFAULT = 0.75;
+    private final int CAPACITY_DEFAULT = 20;
+
     private String[] arrString;
-    private int capacity = 20;
+
+    @Getter private int capacity = CAPACITY_DEFAULT;
 
     @Getter
     private int size;
+
+    @Getter private boolean fixedCapacity = true;
+    private double fillFactor = FILLFACTOR_DEFAULT;
+
+    private int getIndexByString(String str, boolean maxIndex) {
+        verifyData(str);
+
+        int result;
+        try (IntStream resIndex = IntStream.range(0, size - 1)) {
+            resIndex
+                    .filter(index -> arrString[index].equals(str))
+                    .map(index -> index);
+
+            if (maxIndex) {
+                result = resIndex.max().isEmpty() ? -1 : resIndex.max().getAsInt();
+            } else {
+                result = resIndex.min().isEmpty() ? -1 : resIndex.min().getAsInt();
+            }
+        }
+
+//        IntStream resIndex = IntStream.range(0, size - 1)
+//                .filter(index -> arrString[index].equals(str))
+//                .map(index -> index);
+
+        return result;
+    }
 
     // ------------------------------------------
 
@@ -18,28 +52,42 @@ public class StringListImpl implements StringListAPI {
         size = 0;
     }
 
-    private void verifyData(String str, boolean withSize) {
+    private void ifNecessaryExpand(int sizeAdd) {
+        if (!fixedCapacity) {
+            int newCapacity = size + sizeAdd;
+            double newFillFactor = (newCapacity / (double) capacity);
+
+            if (newFillFactor > fillFactor) {
+                var bufIndex = new Object(){  public int index = 0;  };
+
+                var newArray = new String[newCapacity];
+                Stream.of(arrString).limit(size).forEach(str ->
+                        newArray[bufIndex.index] = arrString[bufIndex.index++]);
+
+                arrString = newArray;
+                capacity = newCapacity;
+            }
+        }
+    }
+
+    private void verifyData(String str) {
         if (str == null || str.isBlank()) {
             runException("Нет данных для поиска");
-        }
-
-        if (withSize && size == capacity) {
-            runException("Переполнение списка");
         }
     }
 
     public void verifyIndex(int index) {
-        if (index > size - 1 || index < 0) {
-            runException("Интекс за пределом допустимого значения");
+        if (index < 0 || (fixedCapacity && (index >= capacity ))) {
+            runException("Индекс за пределом допустимого значения");
         }
     }
 
     public void verifyIndexGrup(int sizeAdd, int startIndex) {
-        if ( size == capacity
-                || (size + sizeAdd) > capacity - 1
-                || startIndex > size -1
-                || startIndex < 0 ) {
+        if (size == capacity
+                || (fixedCapacity && (size + sizeAdd) >= capacity)) {
             runException("Переполнение списка");
+        } else if (startIndex < 0 || startIndex >= capacity ) {
+            runException("Индекс за пределом допустимого значения");
         }
     }
 
@@ -52,18 +100,25 @@ public class StringListImpl implements StringListAPI {
         initialDefault();
     }
 
+    public StringListImpl(int capacity, boolean fixedCapacity) {
+        this.capacity = capacity;
+        this.fixedCapacity = fixedCapacity;
+        initialDefault();
+    }
+
     // --------------------- start methods Override
 
     @Override
     public String add(String str) {
-        verifyData(str, true);
-
         return append(str);
     }
 
     @Override
     public String add(int index, String str) {
-        verifyData(str, true);
+        verifyData(str);
+        verifyIndex(index);
+
+        ifNecessaryExpand(1);
 
         offsetRight(index);
         arrString[index] = str;
@@ -71,10 +126,10 @@ public class StringListImpl implements StringListAPI {
         return arrString[index];
     }
 
-
-
     public int add(int index, String[] arrAdd) {
+
         verifyIndexGrup(arrAdd.length, index);
+        ifNecessaryExpand(arrAdd.length);
 
         var startIndex = index;
         var numOffSetRight = arrAdd.length;
@@ -91,10 +146,11 @@ public class StringListImpl implements StringListAPI {
 
     public int add(String[] arrAdd) {
         verifyIndexGrup(arrAdd.length, 0);
+        ifNecessaryExpand(arrAdd.length);
 
         for (var index = 0; index < arrAdd.length; index++) {
             var strAdd = arrAdd[index];
-            verifyData(strAdd, false);
+            verifyData(strAdd);
         }
 
         var resultAdd = 0;
@@ -109,7 +165,10 @@ public class StringListImpl implements StringListAPI {
 
     @Override
     public String append(String str) {
-        verifyData(str, true);
+        verifyData(str);
+        verifyIndex(size);
+
+        ifNecessaryExpand(1);
 
         arrString[size++] = str;
 
@@ -125,7 +184,7 @@ public class StringListImpl implements StringListAPI {
 
     @Override
     public String remove(String str) {
-        verifyData(str,false);
+        verifyData(str);
 
         var index = indexOf(str);
         if (index < 0) {
@@ -140,8 +199,8 @@ public class StringListImpl implements StringListAPI {
         verifyIndex(index);
 
         var resultRemove = get(index);
-
         offsetLeft(index);
+
         return resultRemove;
     }
 
@@ -153,39 +212,27 @@ public class StringListImpl implements StringListAPI {
     @Override
     public int indexOf(String str) {
 
-        verifyData(str, false);
+        verifyData(str);
 
-        int indexResult = -1;
+        var resIndex = IntStream.range(0, size-1)
+                .filter(index-> arrString[index].equals(str))
+                .map(index-> index)
+                .min();
 
-        for(var index = 0; index < size; index++)
-        {
-            if (arrString[index].equals(str)) {
-                indexResult = index;
-                break;
-            }
-        }
-
-        return indexResult;
+        return resIndex.isEmpty() ? -1 : resIndex.getAsInt();
     }
 
     @Override
     public int lastIndexOf(String str) {
-        verifyData(str, false);
 
-        var indexResult = -1;
+        verifyData(str);
 
-        for (var index = size - 1; index >= 0; index--) {
-            if (arrString[index].equals(str)) {
-                indexResult = index;
-                break;
-            }
-        }
+        var resIndex = IntStream.range(0, size-1)
+                .filter(index-> arrString[index].equals(str))
+                .map(index-> index)
+                .max();
 
-        if (indexResult < 0) {
-            runException("Нет данных");
-        }
-
-        return indexResult;
+        return resIndex.isEmpty() ? -1 : resIndex.getAsInt();
     }
 
     @Override
@@ -237,7 +284,7 @@ public class StringListImpl implements StringListAPI {
             }
 
             in = out;
-            while(in > 0 && resultArrString[in-1].compareTo(temp) >= 0 ) {
+            while(in > 0 && resultArrString[in-1].compareTo(temp) > 0 ) {
                 resultArrString[in] = resultArrString[in-1];
                 --in;
             }

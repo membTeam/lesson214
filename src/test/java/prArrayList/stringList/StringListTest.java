@@ -17,9 +17,7 @@ public class StringListTest {
     private StringListImpl stringList;
 
     private void initialDefault() {
-        for (var str : STRING_ARR_DEFAULT){
-            stringList.add(str);
-        }
+        stringList.add(STRING_ARR_DEFAULT);
     }
 
     @BeforeEach
@@ -28,6 +26,7 @@ public class StringListTest {
     }
 
     // --------------------------- start test methods
+
 
     @ParameterizedTest
     @MethodSource(PATH_PARAMETIZED_METHOD + "parametersMethodSet")
@@ -113,9 +112,9 @@ public class StringListTest {
     public void addArrString(int indexAdd) {
         initialDefault();
 
-        var lastIndex = stringList.getSize() - 1;
+        //var lastIndex = stringList.getSize() - 1;
 
-        if (indexAdd > lastIndex || indexAdd < 0) {
+        if (indexAdd >= stringList.getCapacity() || indexAdd < 0) {
             assertThrows(ErrStringListException.class, () -> stringList.add(indexAdd, STRING_ARR_ADD));
         } else {
             var strDataForIndexAdd = stringList.get(indexAdd);
@@ -133,15 +132,15 @@ public class StringListTest {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = { 0, -10, 2, 3, 5, 100000 })
+    @ValueSource(ints = { 1000, 0, -10, 2, 3, 5 })
     public void offsetRight(int indexStart) {
         initialDefault();
-        var startSize = stringList.getSize() - 1;
+        //var startSize = stringList.getSize() - 1;
 
-        if (indexStart > startSize) {
+        if (indexStart < 0 || indexStart >= stringList.getCapacity() ) {
             assertThrows(ErrStringListException.class, () -> stringList.offsetRight(2, indexStart));
         } else {
-            stringList.offsetRight(2, startSize-1);
+            stringList.offsetRight(2, indexStart);
         }
     }
 
@@ -240,9 +239,11 @@ public class StringListTest {
     public void lastIndexOf(String str) {
         initialDefault();
 
-        if (str.equals("100000") || str.isBlank() ) {
+        if (str.equals("100000") ) {
+            assertEquals(-1, stringList.lastIndexOf(str));
+        } else if (str.isBlank())
             assertThrows(ErrStringListException.class, () -> stringList.lastIndexOf(str));
-        } else {
+        else {
             var index = stringList.lastIndexOf(str);
             assertEquals(2, index);
         }

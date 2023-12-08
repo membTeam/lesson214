@@ -18,26 +18,18 @@ abstract public class StringListBase implements StringListAPI {
         size = 0;
     }
 
-    private static boolean verifyClassName(Class<?> className) {
-
-        
-        /*return className.getSimpleName().equals(ARR_CLASS_NAME[0])
-                || className.getSimpleName().equals(ARR_CLASS_NAME[1])
-                ? true : false;*/
-    }
-
     public void setingArrString(Class<?> className, String[] arrString ) {
-        if (!verifyClassName(className)) {
+        /*if (!verifyClassName(className)) {
             runException(ACCESS_IS_CLOSED);
         }
-        this.arrString = arrString;
+        this.arrString = arrString;*/
     }
 
     public void settingSize(Class<?> className, int size) {
-        if (!verifyClassName(className)) {
+        /*if (!verifyClassName(className)) {
             runException(ACCESS_IS_CLOSED);
         }
-        this.size = size;
+        this.size = size;*/
     }
 
     @Override

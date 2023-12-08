@@ -4,8 +4,7 @@ import java.util.stream.Stream;
 
 public class ParametrizedMethods {
 
-    public static final String PATH_PARAMETIZED_METHOD =
-            "prArrayList.stringList.ParametrizedMethods#";
+    public static final String PATH_PARAMETIZED_METHOD = "prArrayList.stringList.ParametrizedMethods#";
 
     public static final String[] STRING_ARR_ADD = new String[]{"125", "325"};
     public static final String[] STRING_ARR_DEFAULT = new String[]{"103", "102", "103", "100", "104", "105"};
