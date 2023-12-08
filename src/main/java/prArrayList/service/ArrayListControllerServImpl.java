@@ -1,7 +1,5 @@
 package prArrayList.service;
 
-import prArrayList.models.StringListTemp;
-
 public class ArrayListControllerServImpl implements ArrayListControllerServ {
 
     @Override
@@ -47,11 +45,6 @@ public class ArrayListControllerServImpl implements ArrayListControllerServ {
     @Override
     public String get(int index) {
         return null;
-    }
-
-    @Override
-    public boolean equals(StringListTemp otherList) {
-        return false;
     }
 
     @Override
